@@ -1,3 +1,5 @@
+Allow aggregating data from large serialized sequences (think 1GB Json/Yaml/other with one top-level array containing `Item`s). Avoids deserializing and storing the entire sequence by providing methods similar to the one defined on `Iterator`.
+
 Extends `Deserialize` with:
 
 ```rust
