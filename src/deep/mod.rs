@@ -36,7 +36,7 @@
 //!
 //! struct Imp;
 //!
-//! impl serde_iter::deep::FoldImpl for Imp {
+//! impl serde_iter::deep::FoldAggregator for Imp {
 //!     type Item = DataEntry;
 //!     type Acc = HashSet<String>;
 //!

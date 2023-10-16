@@ -33,7 +33,7 @@
 //!
 //! fn main() -> anyhow::Result<()> {
 //!     #
-//!     # let example_json_path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "examples", "data.json"]
+//!     # let example_json_path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "examples", "top_level_data.json"]
 //!     #   .iter()
 //!     #   .collect();
 //!     let buffered_file: BufReader<File> = BufReader::new(File::open(example_json_path)?);
