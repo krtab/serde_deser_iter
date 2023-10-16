@@ -1,113 +1,96 @@
 #![no_std]
-use core::convert::Infallible;
-use core::marker::PhantomData;
-use core::{fmt, ops::ControlFlow};
+#![warn(missing_docs)]
 
-use serde::{
-    de::{SeqAccess, Visitor},
-    Deserialize, Deserializer,
-};
+//! This crate offers two different ways to deserialize sequences without
+//! allocating.
+//!
+//! # Example
+//!
+//! Given the following JSON:
+//!
+//! ```json
+//! [
+//!     {"id": 0, "name": "bob", "subscribed_to": ["rust", "knitting", "cooking"]},
+//!     {"id": 1, "name": "toby 🐶", "subscribed_to": ["sticks", "tennis-balls"]},
+//!     {"id": 2, "name": "alice", "subscribed_to": ["rust", "hiking", "paris"]},
+//!     {"id": 3, "name": "mark", "subscribed_to": ["rust", "rugby", "doctor-who"]},
+//!     {"id": 4, "name": "vera", "subscribed_to": ["rust", "mma", "philosophy"]}
+//! ]
+//! ```
+//! we can process it without allocating a 5-sized vector of items as follow:
+//!
+//! ```rust
+//! use serde_iter::top_level::DeserializerExt;
+//! # use std::{fs::File, io::BufReader, path::PathBuf, collections::HashSet};
+//! #
+//! /// The type each item in the sequence will be deserialized to.
+//! #[derive(serde::Deserialize)]
+//! struct DataEntry {
+//!     // Not all fields are needed, but we could add "name"
+//!     // and "id".
+//!     subscribed_to: Vec<String>,
+//! }
+//!
+//! fn main() -> anyhow::Result<()> {
+//!     #
+//!     # let example_json_path: PathBuf = [env!("CARGO_MANIFEST_DIR"), "examples", "data.json"]
+//!     #   .iter()
+//!     #   .collect();
+//!     let buffered_file: BufReader<File> = BufReader::new(File::open(example_json_path)?);
+//!     let mut json_deserializer = serde_json::Deserializer::from_reader(buffered_file);
+//!     let mut all_channels = HashSet::new();
+//!
+//!     json_deserializer.for_each(|entry: DataEntry| all_channels.extend(entry.subscribed_to))?;
+//!     println!("All existing channels:");
+//!     for channel in all_channels {
+//!         println!("  - {channel}")
+//!     }
+//!     Ok(())
+//! }
+//! ```
+//!
+//! # Top-level vs deep
+//!
+//! ## Top-level
+//!
+//! The [`top_level`] module offers the most user friendly and powerful way to
+//! deserialize sequences. However, it is restricted to sequences defined at
+//! the top-level. For example it can work on each `{"name": ...}` from the following JSON
+//!
+//! ```json
+//! [
+//!     {"name": "object1"},
+//!     {"name": "object2"},
+//!     {"name": "object3"}
+//! ]
+//! ```
+//!
+//! but not if they are deeper in the structure:
+//!
+//! ```json
+//! {
+//!     "result": [
+//!         {"name": "object1"},
+//!         {"name": "object2"},
+//!         {"name": "object3"}
+//!     ]
+//! }
+//! ```
+//!
+//! ## Deep
+//!
+//! The [`deep`] module allows working on sequences located at any depth
+//! (and even nested one, though cumbersomely). However it does not allow to
+//! run closures on the iterated items, only functions, and its interface is
+//! less intuitive than [`top_level`].
+//!
+//! # Early returns
+//!
+//! **Caution.**  In case of an early return from the aggregating function,
+//! all remaining items will still be deserialized (but discarded immediately).
+//! This is because the format deserializers expect to have consume the whole
+//! sequence before continuing.
 
-struct DeserTryFolder<Acc, Item, Err, F> {
-    marker: PhantomData<fn(Acc, Item) -> ControlFlow<Err, Acc>>,
-    init: Acc,
-    f: F,
-}
+pub mod deep;
 
-impl<Acc, Item, Err, F> DeserTryFolder<Acc, Item, Err, F> {
-    pub fn new(init: Acc, f: F) -> Self {
-        Self {
-            marker: PhantomData,
-            f,
-            init,
-        }
-    }
-}
-
-struct Wrapper<T>(T);
-
-impl<'de, Acc, Item, Err, F> Visitor<'de> for Wrapper<DeserTryFolder<Acc, Item, Err, F>>
-where
-    F: FnMut(Acc, Item) -> ControlFlow<Err, Acc>,
-    Item: Deserialize<'de>,
-{
-    type Value = ControlFlow<Err, Acc>;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("a sequence")
-    }
-
-    fn visit_seq<A>(mut self, mut seq: A) -> Result<Self::Value, A::Error>
-    where
-        A: SeqAccess<'de>,
-    {
-        let mut acc = self.0.init;
-        while let Some(value) = seq.next_element()? {
-            match (self.0.f)(acc, value) {
-                ControlFlow::Continue(new_acc) => acc = new_acc,
-                ControlFlow::Break(clot_break) => return Ok(ControlFlow::Break(clot_break)),
-            }
-        }
-        Ok(ControlFlow::Continue(acc))
-    }
-}
-
-fn lift_infallible<T>(val: T) -> ControlFlow<Infallible, T> {
-    ControlFlow::Continue(val)
-}
-
-pub trait DeserializerExt<'de, Item>: Deserializer<'de>
-where
-    Item: Deserialize<'de>,
-{
-    fn try_fold<Acc, Err, F>(self, init: Acc, f: F) -> Result<ControlFlow<Err, Acc>, Self::Error>
-    where
-        F: FnMut(Acc, Item) -> ControlFlow<Err, Acc>,
-    {
-        let folder = DeserTryFolder::new(init, f);
-        self.deserialize_seq(Wrapper(folder))
-    }
-
-    fn fold<Acc, F>(self, init: Acc, mut f: F) -> Result<Acc, Self::Error>
-    where
-        F: FnMut(Acc, Item) -> Acc,
-    {
-        match self.try_fold(init, |acc, item| lift_infallible(f(acc, item))) {
-            Ok(ControlFlow::Break(_infallible)) => unreachable!(),
-            Ok(ControlFlow::Continue(res)) => Ok(res),
-            Err(e) => Err(e),
-        }
-    }
-
-    fn for_each<F>(self, mut f: F) -> Result<(), Self::Error>
-    where
-        F: FnMut(Item),
-    {
-        self.fold((), |(), item| f(item))
-    }
-
-    fn find<F>(self, mut f: F) -> Result<Option<Item>, Self::Error>
-    where
-        F: for<'a> FnMut(&'a Item) -> bool,
-    {
-        let fold_res = self.try_fold((), |(), item| {
-            if f(&item) {
-                ControlFlow::Break(item)
-            } else {
-                ControlFlow::Continue(())
-            }
-        });
-        let res = match fold_res? {
-            ControlFlow::Continue(()) => None,
-            ControlFlow::Break(item) => Some(item),
-        };
-        Ok(res)
-    }
-}
-
-impl<'de, Item, D> DeserializerExt<'de, Item> for D
-where
-    D: Deserializer<'de>,
-    Item: Deserialize<'de>,
-{
-}
+pub mod top_level;

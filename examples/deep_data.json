@@ -1,0 +1,10 @@
+{
+    "api_version": "x.y.z",
+    "result" : [
+        {"id": 0, "name": "bob", "subscribed_to": ["rust", "knitting", "cooking"]},
+        {"id": 1, "name": "toby 🐶", "subscribed_to": ["good-boy-lifestyle", "sticks", "tennis-balls"]},
+        {"id": 2, "name": "alice", "subscribed_to": ["rust", "hiking", "paris"]},
+        {"id": 3, "name": "mark", "subscribed_to": ["rust", "rugby", "doctor-who"]},
+        {"id": 4, "name": "vera", "subscribed_to": ["rust", "mma", "philosophy"]}
+    ]
+}
