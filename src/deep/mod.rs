@@ -1,4 +1,4 @@
-//! Zero-allocation deserialization of sequences located anywhere.
+//! Zero-allocation deserialization of sequences located anywhere
 //!
 //! This modules provides a type, [`StreamSeqDeser`] which implements [`serde::Deserialize`],
 //! and can be used anywhere a sequence would be encountered. Its type parameter

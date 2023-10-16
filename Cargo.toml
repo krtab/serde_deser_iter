@@ -1,15 +1,26 @@
 [package]
 name = "serde_iter"
 version = "0.1.0"
+rust-version = "1.65"
+authors = ["Arthur Carcano <arthur.carcano@ocamlpro.com>"]
+description = """Iterate through serialized sequences allowing \
+to aggregate them without deserializing to an allocated collection."""
+categories = ["encoding", "no-std", "no-std::no-alloc"]
+keywords = ["serde", "serialization", "no_std", "iter", "streaming"]
+repository = "https://github.com/krtab/serde_iter"
+readme = "Readme.md"
 edition = "2021"
+resolver = "2"
+license = "MIT OR Apache-2.0"
 
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+exclude = [
+    "examples/*movies.*"
+]
 
 [dependencies]
-serde = { version = "1.0.189" }
+serde = { version = "1.0.189", default-features = false }
 
 [dev-dependencies]
 serde_json = "1.0.107"
 anyhow = "1.0.75"
-serde = { version = "1.0.189" , features = ["derive"]}
+serde = { version = "1.0.189", features = ["derive"] }

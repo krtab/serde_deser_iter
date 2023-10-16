@@ -90,6 +90,21 @@
 //! all remaining items will still be deserialized (but discarded immediately).
 //! This is because the format deserializers expect to have consume the whole
 //! sequence before continuing.
+//!
+//! # FAQ
+//!
+//! ## Is this really iteration?
+//!
+//! This crate arguibly offers a form on internal iteration, as opposed to
+//! the external iteration proposed by Rust, see this blog post
+//! [section](https://without.boats/blog/why-async-rust/index.html#iterators) for
+//! more
+//!
+//! ## I don't understand how to use your crate to parse JSONL (one JSON object per line)
+//!
+//! That's because you can't. Parsing a file containining a sequence of well-formated
+//! serialziation separated by whitespace needs to be done by the format deserializer.
+//! For JSON for example, use [serde_json::StreamDeserializer](https://docs.rs/serde_json/latest/serde_json/struct.StreamDeserializer.html).
 
 pub mod deep;
 
