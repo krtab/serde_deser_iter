@@ -4,7 +4,7 @@
 //! with methods similar to those used to aggregate data from an iterator
 //! (`fold`, `for_each`, `find`).
 //!
-//! To use it, simply `use serde_iter::top_level::DeserializerExt` and use the appropriated method
+//! To use it, simply `use serde_deser_iter::top_level::DeserializerExt` and use the appropriated method
 //! from [`DeserializerExt`].
 //!
 //! # Example
@@ -23,7 +23,7 @@
 //! we can process it without allocating a 5-sized vector of items as follow:
 //!
 //! ```
-//! use serde_iter::top_level::DeserializerExt;
+//! use serde_deser_iter::top_level::DeserializerExt;
 //! # use std::{fs::File, io::BufReader, path::PathBuf};
 //!
 //! #[derive(serde::Deserialize)]

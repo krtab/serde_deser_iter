@@ -1,4 +1,4 @@
-use serde_iter::top_level::DeserializerExt;
+use serde_deser_iter::top_level::DeserializerExt;
 use std::{collections::HashSet, fs::File, io::BufReader, path::PathBuf};
 
 #[derive(serde::Deserialize)]

@@ -20,7 +20,7 @@
 //! we can process it without allocating a 5-sized vector of items as follow:
 //!
 //! ```rust
-//! use serde_iter::top_level::DeserializerExt;
+//! use serde_deser_iter::top_level::DeserializerExt;
 //! # use std::{fs::File, io::BufReader, path::PathBuf, collections::HashSet};
 //! #
 //! /// The type each item in the sequence will be deserialized to.

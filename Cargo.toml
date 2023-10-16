@@ -1,5 +1,5 @@
 [package]
-name = "serde_iter"
+name = "serde_deser_iter"
 version = "0.1.0"
 rust-version = "1.65"
 authors = ["Arthur Carcano <arthur.carcano@ocamlpro.com>"]
@@ -7,7 +7,7 @@ description = """Iterate through serialized sequences allowing \
 to aggregate them without deserializing to an allocated collection."""
 categories = ["encoding", "no-std", "no-std::no-alloc"]
 keywords = ["serde", "serialization", "no_std", "iter", "streaming"]
-repository = "https://github.com/krtab/serde_iter"
+repository = "https://github.com/krtab/serde_deser_iter"
 readme = "Readme.md"
 edition = "2021"
 resolver = "2"

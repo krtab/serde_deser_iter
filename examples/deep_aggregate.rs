@@ -7,7 +7,7 @@ struct DataEntry {
 
 struct Imp;
 
-impl serde_iter::deep::FoldAggregator for Imp {
+impl serde_deser_iter::deep::FoldAggregator for Imp {
     type Item = DataEntry;
     type Acc = HashSet<String>;
 
@@ -23,7 +23,7 @@ impl serde_iter::deep::FoldAggregator for Imp {
 
 #[derive(serde::Deserialize)]
 struct Data {
-    result: serde_iter::deep::StreamSeqDeser<serde_iter::deep::Fold<Imp>>,
+    result: serde_deser_iter::deep::StreamSeqDeser<serde_deser_iter::deep::Fold<Imp>>,
 }
 
 fn main() -> anyhow::Result<()> {

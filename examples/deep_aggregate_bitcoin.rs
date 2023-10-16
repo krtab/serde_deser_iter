@@ -2,7 +2,7 @@ use std::{fs::File, io::BufReader, path::PathBuf};
 
 struct Imp;
 
-impl serde_iter::deep::FoldAggregator for Imp {
+impl serde_deser_iter::deep::FoldAggregator for Imp {
     type Item = u64;
     type Acc = u64;
 
@@ -18,7 +18,7 @@ impl serde_iter::deep::FoldAggregator for Imp {
 #[derive(serde::Deserialize)]
 struct BitCoin {
     #[serde(rename = "txIndexes")]
-    tx_indexes: serde_iter::deep::StreamSeqDeser<serde_iter::deep::Fold<Imp>>,
+    tx_indexes: serde_deser_iter::deep::StreamSeqDeser<serde_deser_iter::deep::Fold<Imp>>,
 }
 
 fn main() -> anyhow::Result<()> {
